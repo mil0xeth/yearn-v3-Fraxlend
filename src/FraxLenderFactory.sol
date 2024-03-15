@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.18;
 
-import {CompoundV3Lender} from "./CompoundV3Lender.sol";
+import {FraxLender} from "./FraxLender.sol";
 import {IStrategyInterface} from "./interfaces/IStrategyInterface.sol";
 
-contract CompoundV3LenderFactory {
+contract FraxLenderFactory {
     /// @notice Revert message for when a strategy has already been deployed.
     error AlreadyDeployed(address _strategy);
 
-    event NewCompoundV3Lender(address indexed strategy, address indexed asset);
+    event NewFraxLender(address indexed strategy, address indexed asset);
 
     address public management;
     address public performanceFeeRecipient;
     address public keeper;
 
-    /// @notice Track the deployments. comet => strategy
+    /// @notice Track the deployments. market => strategy
     mapping(address => address) public deployments;
 
     constructor(
@@ -35,23 +35,21 @@ contract CompoundV3LenderFactory {
      * @param _name The name for the lender to use.
      * @return . The address of the new lender.
      */
-    function newCompoundV3Lender(
+    function newFraxLender(
         address _asset,
-        string memory _name,
-        address _comet,
-        address _rewardToAssetOracle
+        address _market,
+        string memory _name
     ) external returns (address) {
-        if (deployments[_comet] != address(0))
-            revert AlreadyDeployed(deployments[_comet]);
+        if (deployments[_market] != address(0))
+            revert AlreadyDeployed(deployments[_market]);
         // We need to use the custom interface with the
         // tokenized strategies available setters.
         IStrategyInterface newStrategy = IStrategyInterface(
             address(
-                new CompoundV3Lender(
+                new FraxLender(
                     _asset,
-                    _name,
-                    _comet,
-                    _rewardToAssetOracle
+                    _market,
+                    _name
                 )
             )
         );
@@ -62,9 +60,9 @@ contract CompoundV3LenderFactory {
 
         newStrategy.setPendingManagement(management);
 
-        emit NewCompoundV3Lender(address(newStrategy), _asset);
+        emit NewFraxLender(address(newStrategy), _asset);
 
-        deployments[_comet] = address(newStrategy);
+        deployments[_market] = address(newStrategy);
         return address(newStrategy);
     }
 
@@ -82,7 +80,7 @@ contract CompoundV3LenderFactory {
     function isDeployedStrategy(
         address _strategy
     ) external view returns (bool) {
-        address _comet = IStrategyInterface(_strategy).comet();
-        return deployments[_comet] == _strategy;
+        address _market = IStrategyInterface(_strategy).market();
+        return deployments[_market] == _strategy;
     }
 }

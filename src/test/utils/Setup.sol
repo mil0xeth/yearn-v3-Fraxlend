@@ -6,7 +6,7 @@ import {ExtendedTest} from "./ExtendedTest.sol";
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-import {CompoundV3LenderFactory, CompoundV3Lender} from "../../CompoundV3LenderFactory.sol";
+import {FraxLenderFactory, FraxLender} from "../../FraxLenderFactory.sol";
 import {IStrategyInterface} from "../../interfaces/IStrategyInterface.sol";
 
 // Inherit the events so they can be checked if desired.
@@ -23,11 +23,10 @@ interface IFactory {
 contract Setup is ExtendedTest, IEvents {
     // Contract instancees that we will use repeatedly.
     ERC20 public asset;
+    address public market;
     IStrategyInterface public strategy;
 
-    CompoundV3LenderFactory public lenderFactory;
-
-    address public comet = 0xc3d688B66703497DAA19211EEdff47f25384cdc3;
+    FraxLenderFactory public lenderFactory;
 
     mapping(string => address) public tokenAddrs;
 
@@ -53,14 +52,15 @@ contract Setup is ExtendedTest, IEvents {
     function setUp() public virtual {
         _setTokenAddrs();
 
-        lenderFactory = new CompoundV3LenderFactory(
+        lenderFactory = new FraxLenderFactory(
             management,
             performanceFeeRecipient,
             keeper
         );
 
         // Set asset
-        asset = ERC20(tokenAddrs["USDC"]);
+        asset = ERC20(0x853d955aCEf822Db058eb8505911ED77F175b99e); //FRAX on Mainnet
+        market = 0x3835a58CA93Cdb5f912519ad366826aC9a752510; //CRV/FRAX market on Mainnet
 
         // Set decimals
         decimals = asset.decimals();
@@ -83,20 +83,16 @@ contract Setup is ExtendedTest, IEvents {
         // we save the strategy as a IStrategyInterface to give it the needed interface
         IStrategyInterface _strategy = IStrategyInterface(
             address(
-                lenderFactory.newCompoundV3Lender(
+                lenderFactory.newFraxLender(
                     address(asset),
-                    "Tokenized Strategy",
-                    comet,
-                    0xdbd020CAeF83eFd542f4De03e3cF0C28A4428bd5
+                    market,
+                    "Tokenized Strategy"
                 )
             )
         );
 
         vm.prank(management);
         _strategy.acceptManagement();
-
-        vm.prank(management);
-        _strategy.setUniFees(3000, 500);
 
         return address(_strategy);
     }
