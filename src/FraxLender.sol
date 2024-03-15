@@ -2,7 +2,7 @@
 pragma solidity 0.8.18;
 
 import {BaseStrategy, ERC20} from "@tokenized-strategy/BaseStrategy.sol";
-import "forge-std/console.sol";
+
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -23,11 +23,8 @@ contract FraxLender is BaseStrategy {
     }
 
     function _freeFunds(uint256 _amount) internal override {
-        console.log("free funds _amount: ", _amount);
         IFraxLend(market).addInterest();
         uint256 amountInShares = IFraxLend(market).toAssetShares(_amount, false);
-        console.log("toAssetShares: ", amountInShares);
-        console.log("actual balance: ", ERC20(market).balanceOf(address(this)));
         amountInShares = Math.min(amountInShares, ERC20(market).balanceOf(address(this)));
         IFraxLend(market).redeem(amountInShares, address(this), address(this));
     }
