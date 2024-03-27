@@ -11,4 +11,6 @@ interface IFraxLend {
     function toAssetAmount(uint256 _shares, bool _roundUp) external view returns (uint256);
 
     function toAssetShares(uint256 _amount, bool _roundUp) external view returns (uint256);
+
+    function asset() external view returns (address);
 }

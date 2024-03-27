@@ -14,6 +14,7 @@ contract FraxLender is BaseStrategy {
     address public immutable market;
 
     constructor(address _asset, address _market, string memory _name) BaseStrategy(_asset, _name) {
+        require(IFraxLend(_market).asset() == _asset, "!asset");
         market = _market;
         asset.safeApprove(_market, type(uint256).max);
     }
@@ -23,7 +24,7 @@ contract FraxLender is BaseStrategy {
     }
 
     function _freeFunds(uint256 _amount) internal override {
-        IFraxLend(market).addInterest();
+        IFraxLend(market).addInterest(); // accrue any interest
         uint256 amountInShares = IFraxLend(market).toAssetShares(_amount, false);
         amountInShares = Math.min(amountInShares, ERC20(market).balanceOf(address(this)));
         IFraxLend(market).redeem(amountInShares, address(this), address(this));
@@ -34,7 +35,7 @@ contract FraxLender is BaseStrategy {
         override
         returns (uint256 _totalAssets)
     {
-        IFraxLend(market).addInterest();
+        IFraxLend(market).addInterest(); // accrue any interest
         _totalAssets = balanceOfAsset() + balanceOfInvestment();
     }
 
@@ -51,7 +52,7 @@ contract FraxLender is BaseStrategy {
     }
 
     function _emergencyWithdraw(uint256 _amount) internal override {
-        IFraxLend(market).addInterest();
+        IFraxLend(market).addInterest(); // accrue any interest
         uint256 amountInShares = IFraxLend(market).toAssetShares(_amount, true);
         amountInShares = Math.min(amountInShares, ERC20(market).balanceOf(address(this)));
         IFraxLend(market).redeem(amountInShares, address(this), address(this));
