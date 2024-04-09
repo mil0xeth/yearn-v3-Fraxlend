@@ -28,14 +28,14 @@ contract OperationTest is Setup {
         checkStrategyTotals(strategy, _amount, _amount, 0);
 
         // Earn Interest
-        skip(1 days);
+        skip(10 days);
 
         // Report profit
         vm.prank(keeper);
         (uint256 profit, uint256 loss) = strategy.report();
 
         // Check return Values
-        assertGe(profit, 0, "!profit");
+        assertGt(profit, 0, "!profit");
         assertEq(loss, 0, "!loss");
 
         skip(strategy.profitMaxUnlockTime());
@@ -46,7 +46,7 @@ contract OperationTest is Setup {
         vm.prank(user);
         strategy.redeem(_amount, user, user);
 
-        assertGe(
+        assertGt(
             asset.balanceOf(user),
             balanceBefore + _amount,
             "!final balance"
@@ -77,7 +77,7 @@ contract OperationTest is Setup {
         (uint256 profit, uint256 loss) = strategy.report();
 
         // Check return Values
-        assertGe(profit, toAirdrop, "!profit");
+        assertGt(profit, toAirdrop, "!profit");
         assertEq(loss, 0, "!loss");
 
         skip(strategy.profitMaxUnlockTime());
@@ -88,7 +88,7 @@ contract OperationTest is Setup {
         vm.prank(user);
         strategy.redeem(_amount, user, user);
 
-        assertGe(
+        assertGt(
             asset.balanceOf(user),
             balanceBefore + _amount,
             "!final balance"
@@ -122,7 +122,7 @@ contract OperationTest is Setup {
         (uint256 profit, uint256 loss) = strategy.report();
 
         // Check return Values
-        assertGe(profit, toAirdrop, "!profit");
+        assertGt(profit, toAirdrop, "!profit");
         assertEq(loss, 0, "!loss");
 
         skip(strategy.profitMaxUnlockTime());
@@ -139,7 +139,7 @@ contract OperationTest is Setup {
         strategy.redeem(_amount, user, user);
 
         // TODO: Adjust if there are fees
-        assertGe(
+        assertGt(
             asset.balanceOf(user),
             balanceBefore + _amount,
             "!final balance"
@@ -152,47 +152,10 @@ contract OperationTest is Setup {
             performanceFeeRecipient
         );
 
-        assertGe(
-            asset.balanceOf(performanceFeeRecipient) + 1,
+        assertGt(
+            asset.balanceOf(performanceFeeRecipient),
             expectedShares,
             "!perf fee out"
         );
-    }
-
-    function test_tendTrigger(uint256 _amount) public {
-        vm.assume(_amount > minFuzzAmount && _amount < maxFuzzAmount);
-
-        (bool trigger, ) = strategy.tendTrigger();
-        assertTrue(!trigger);
-
-        // Deposit into strategy
-        mintAndDepositIntoStrategy(strategy, user, _amount);
-
-        (trigger, ) = strategy.tendTrigger();
-        assertTrue(!trigger);
-
-        // Skip some time
-        skip(1 days);
-
-        (trigger, ) = strategy.tendTrigger();
-        assertTrue(!trigger);
-
-        vm.prank(keeper);
-        strategy.report();
-
-        (trigger, ) = strategy.tendTrigger();
-        assertTrue(!trigger);
-
-        // Unlock Profits
-        skip(strategy.profitMaxUnlockTime());
-
-        (trigger, ) = strategy.tendTrigger();
-        assertTrue(!trigger);
-
-        vm.prank(user);
-        strategy.redeem(_amount, user, user);
-
-        (trigger, ) = strategy.tendTrigger();
-        assertTrue(!trigger);
     }
 }

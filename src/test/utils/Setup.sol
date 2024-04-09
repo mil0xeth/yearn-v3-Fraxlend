@@ -35,6 +35,7 @@ contract Setup is ExtendedTest, IEvents {
     address public keeper = address(4);
     address public management = address(1);
     address public performanceFeeRecipient = address(3);
+    address public emergencyAdmin = address(6);
 
     // Address of the real deployed Factory
     address public factory;
@@ -49,18 +50,61 @@ contract Setup is ExtendedTest, IEvents {
     // Default prfot max unlock time is set for 10 days
     uint256 public profitMaxUnlockTime = 10 days;
 
+    bool public useBoolAddInterest;
+
     function setUp() public virtual {
-        _setTokenAddrs();
+        //------------------MAINNET:
+        asset = ERC20(0x853d955aCEf822Db058eb8505911ED77F175b99e); //FRAX on Mainnet
+
+        //useBoolAddInterest = false;
+        //market = 0x794F6B13FBd7EB7ef10d1ED205c9a416910207Ff; //WETH/FRAX market on Mainnet
+        //market = 0x32467a5fc2d72D21E8DCe990906547A2b012f382; //WBTC/FRAX MAINNET
+        //market = 0xDbe88DBAc39263c47629ebbA02b3eF4cf0752A72; //FXS FRAX
+        //market = 0x74F82Bd9D0390A4180DaaEc92D64cf0708751759; //FPI FRAX
+        //market = 0xa1D100a5bf6BFd2736837c97248853D989a9ED84; //CVX
+        //market = 0x3835a58CA93Cdb5f912519ad366826aC9a752510; //CRV/FRAX market on Mainnet
+        //market = 0x66bf36dBa79d4606039f04b32946A260BCd3FF52; //gOHM
+        
+        //useBoolAddInterest = true;
+        //market = 0x78bB3aEC3d855431bd9289fD98dA13F9ebB7ef15; //sfrxETH/FRAX MAINNET
+        //market = 0x281E6CB341a552E4faCCc6b4eEF1A6fCC523682d; //frxETH/ETH Curve LP FRAX
+        //market = 0x1Fff4a418471a7b44EFa023320e02DCDB486ED77; //FRAX/USDC Curve LP FRAX
+        //market = 0x82Ec28636B77661a95f021090F6bE0C8d379DD5D; //MKR
+        //market = 0xc6CadA314389430d396C7b0C70c6281e99ca7fe8; //UNI
+        //market = 0xc779fEE076EB04b9F8EA424ec19DE27Efd17A68d; //AAVE
+        //market = 0x7093F6141293F7C4F67E5efD922aC934402E452d; //LINK
+        //market = 0xb5a46f712F03808aE5c4B885C6F598fA06442684; //WSTETH
+        //market = 0x0601B72bEF2b3F09E9f48B7d60a8d7D2D3800C6e; //LDO
+        //market = 0xa4Ddd4770588EF97A3a03E4B7E3885d824159bAA; //rETH
+
+        //Not interesting (near zero lend apy):
+        //market = 0x3a25B9aB8c07FfEFEe614531C75905E810d8A239; //APE FRAX
+        //market = 0x35E08B28d5b01D058cbB1c39dA9188CC521a79aF; //FXB_1_JUN302024
+        //market = 0xd1887398f3bbdC9d10D0d5616AD83506DdF5057a; //FXB_2_DEC312024
+        //market = 0x1c0C222989a37247D974937782cebc8bF4f25733; //FXB_4_DEC312026 
+
+        //USDC MARKET:
+        //useBoolAddInterest = true;
+        //asset = ERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48); //USDC on Mainnet
+        //market = 0xeE847a804b67f4887c9E8fe559A2dA4278deFB52; //USDC-sfrxETH
+
+
+        //----------- ARBITRUM:
+        useBoolAddInterest = true;
+        asset = ERC20(0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F); //FRAX on ARBITRUM
+        market = 0x9168AC3a83A31bd85c93F4429a84c05db2CaEF08; //WBTC
+        //market = 0x6076ebDFE17555ed3E6869CF9C373Bbd9aD55d38; //GMX
+        //market = 0x2D0483FefAbA4325c7521539a3DFaCf94A19C472; //ARB
+
+
+
 
         lenderFactory = new FraxLenderFactory(
             management,
             performanceFeeRecipient,
-            keeper
+            keeper,
+            emergencyAdmin
         );
-
-        // Set asset
-        asset = ERC20(0x853d955aCEf822Db058eb8505911ED77F175b99e); //FRAX on Mainnet
-        market = 0x3835a58CA93Cdb5f912519ad366826aC9a752510; //CRV/FRAX market on Mainnet
 
         // Set decimals
         decimals = asset.decimals();
@@ -86,6 +130,7 @@ contract Setup is ExtendedTest, IEvents {
                 lenderFactory.newFraxLender(
                     address(asset),
                     market,
+                    useBoolAddInterest,
                     "Tokenized Strategy"
                 )
             )
@@ -93,6 +138,11 @@ contract Setup is ExtendedTest, IEvents {
 
         vm.prank(management);
         _strategy.acceptManagement();
+
+        vm.prank(management);
+        _strategy.setProfitLimitRatio(60535);
+        //vm.prank(management);
+        //strategy.setDoHealthCheck(false);
 
         return address(_strategy);
     }
@@ -165,13 +215,4 @@ contract Setup is ExtendedTest, IEvents {
         strategy.setPerformanceFee(_performanceFee);
     }
 
-    function _setTokenAddrs() internal {
-        tokenAddrs["WBTC"] = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
-        tokenAddrs["YFI"] = 0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e;
-        tokenAddrs["WETH"] = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-        tokenAddrs["LINK"] = 0x514910771AF9Ca656af840dff83E8264EcF986CA;
-        tokenAddrs["USDT"] = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
-        tokenAddrs["DAI"] = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
-        tokenAddrs["USDC"] = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-    }
 }

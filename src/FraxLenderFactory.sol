@@ -13,6 +13,7 @@ contract FraxLenderFactory {
     address public management;
     address public performanceFeeRecipient;
     address public keeper;
+    address public emergencyAdmin;
 
     /// @notice Track the deployments. market => strategy
     mapping(address => address) public deployments;
@@ -20,12 +21,14 @@ contract FraxLenderFactory {
     constructor(
         address _management,
         address _performanceFeeRecipient,
-        address _keeper
+        address _keeper,
+        address _emergencyAdmin
     ) {
         require(_management != address(0), "ZERO ADDRESS");
         management = _management;
         performanceFeeRecipient = _performanceFeeRecipient;
         keeper = _keeper;
+        emergencyAdmin = _emergencyAdmin;
     }
 
     /**
@@ -38,6 +41,7 @@ contract FraxLenderFactory {
     function newFraxLender(
         address _asset,
         address _market,
+        bool _useBoolAddInterest,
         string memory _name
     ) external returns (address) {
         if (deployments[_market] != address(0))
@@ -49,6 +53,7 @@ contract FraxLenderFactory {
                 new FraxLender(
                     _asset,
                     _market,
+                    _useBoolAddInterest,
                     _name
                 )
             )
@@ -57,6 +62,8 @@ contract FraxLenderFactory {
         newStrategy.setPerformanceFeeRecipient(performanceFeeRecipient);
 
         newStrategy.setKeeper(keeper);
+
+        newStrategy.setEmergencyAdmin(emergencyAdmin);
 
         newStrategy.setPendingManagement(management);
 
@@ -69,12 +76,14 @@ contract FraxLenderFactory {
     function setAddresses(
         address _management,
         address _performanceFeeRecipient,
-        address _keeper
+        address _keeper,
+        address _emergencyAdmin
     ) external {
         require(msg.sender == management, "!management");
         management = _management;
         performanceFeeRecipient = _performanceFeeRecipient;
         keeper = _keeper;
+        emergencyAdmin = _emergencyAdmin;
     }
 
     function isDeployedStrategy(
