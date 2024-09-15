@@ -56,8 +56,8 @@ contract Setup is ExtendedTest, IEvents {
         //------------------MAINNET:
         asset = ERC20(0x853d955aCEf822Db058eb8505911ED77F175b99e); //FRAX on Mainnet
 
-        //useBoolAddInterest = false;
-        //market = 0x794F6B13FBd7EB7ef10d1ED205c9a416910207Ff; //WETH/FRAX market on Mainnet
+        useBoolAddInterest = false;
+        market = 0x794F6B13FBd7EB7ef10d1ED205c9a416910207Ff; //WETH/FRAX market on Mainnet
         //market = 0x32467a5fc2d72D21E8DCe990906547A2b012f382; //WBTC/FRAX MAINNET
         //market = 0xDbe88DBAc39263c47629ebbA02b3eF4cf0752A72; //FXS FRAX
         //market = 0x74F82Bd9D0390A4180DaaEc92D64cf0708751759; //FPI FRAX
@@ -90,9 +90,9 @@ contract Setup is ExtendedTest, IEvents {
 
 
         //----------- ARBITRUM:
-        useBoolAddInterest = true;
-        asset = ERC20(0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F); //FRAX on ARBITRUM
-        market = 0x9168AC3a83A31bd85c93F4429a84c05db2CaEF08; //WBTC
+        //useBoolAddInterest = true;
+        //asset = ERC20(0x17FC002b466eEc40DaE837Fc4bE5c67993ddBd6F); //FRAX on ARBITRUM
+        //market = 0x9168AC3a83A31bd85c93F4429a84c05db2CaEF08; //WBTC
         //market = 0x6076ebDFE17555ed3E6869CF9C373Bbd9aD55d38; //GMX
         //market = 0x2D0483FefAbA4325c7521539a3DFaCf94A19C472; //ARB
 

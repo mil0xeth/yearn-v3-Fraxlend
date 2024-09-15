@@ -21,4 +21,8 @@ interface IFraxLend {
     function totalAsset() external view returns (uint256);
 
     function totalBorrow() external view returns (uint256);
+
+    function currentRateInfo() external view returns (uint64 lastBlock, uint64 feeToProtocolRate, uint64 lastTimestamp, uint64 ratePerSec);
+
+    function getPairAccounting() external view returns (uint128 _totalAssetAmount, uint128 _totalAssetShares, uint128 _totalBorrowAmount, uint128 _totalBorrowShares, uint256 _totalCollateral);
 }
